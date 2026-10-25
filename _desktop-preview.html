@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ar" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>Desktop preview</title>
+  <style>
+    html, body { margin: 0; background: #d8d8d8; }
+    iframe { display: block; width: 1280px; height: 900px; border: 0; background: #fff; }
+  </style>
+</head>
+<body>
+  <iframe id="previewFrame" src="/index.html" title="Desktop preview"></iframe>
+  <script>
+    (function () {
+      const frame = document.getElementById("previewFrame");
+      const params = new URLSearchParams(location.search);
+      const section = params.get("section");
+      frame.style.width = (Number(params.get("width")) || 1280) + "px";
+      frame.style.height = (Number(params.get("height")) || 900) + "px";
+      frame.addEventListener("load", async function () {
+        try {
+          const doc = frame.contentDocument;
+          const win = frame.contentWindow;
+          doc.querySelectorAll(".reveal").forEach(function (node) {
+            node.classList.add("is-visible");
+          });
+          const style = doc.createElement("style");
+          style.textContent = "html{scroll-behavior:auto!important} *{animation-duration:0s!important;transition-duration:0s!important}";
+          doc.head.appendChild(style);
+          doc.querySelectorAll("img[loading=lazy]").forEach(function (img) {
+            img.loading = "eager";
+          });
+          await new Promise(function (resolve) { setTimeout(resolve, 500); });
+          if (section) {
+            const target = doc.getElementById(section);
+            if (target) win.scrollTo(0, Math.max(0, target.offsetTop - 10));
+          } else {
+            win.scrollTo(0, 0);
+          }
+        } catch (error) {
+          document.title = "Preview error";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
